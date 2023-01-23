@@ -10,5 +10,4 @@ require (
 	github.com/lib/pq v1.3.0
 	github.com/nats-io/nats.go v1.9.1
 	github.com/segmentio/ksuid v1.0.2
-	github.com/tinrab/retry v1.0.0
 )

@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/tinrab/retry"
 
 	"articles/db"
 	"articles/event"
+	"articles/util"
 )
 
 type Config struct {
@@ -37,7 +36,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	retry.ForeverSleep(2*time.Second, func(_ int) error {
+	util.Retry(func(_ int) error {
 		connectionStr := fmt.Sprintf(
 			"postgres://%s:%s@postgres/%s?sslmode=disable",
 			config.PostgresUser,
@@ -54,7 +53,7 @@ func main() {
 	})
 	defer db.Close()
 
-	retry.ForeverSleep(2*time.Second, func(_ int) error {
+	util.Retry(func(_ int) error {
 		connectionStr := fmt.Sprintf("nats://%s", config.NatsAddress)
 		es, err := event.NatsInit(connectionStr)
 		if err != nil {

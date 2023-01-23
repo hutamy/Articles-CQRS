@@ -35,5 +35,10 @@ func listArticlesHandler(w http.ResponseWriter, r *http.Request) {
 		util.ResponseOk(w, []schema.Article{})
 		return
 	}
+
+	if len(articles) == 0 {
+		util.ResponseOk(w, make([]schema.Article, 0))
+		return
+	}
 	util.ResponseOk(w, articles)
 }

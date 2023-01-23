@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS articles;
+
 CREATE TABLE articles (
   id VARCHAR(32) PRIMARY KEY,
   author TEXT NOT NULL,

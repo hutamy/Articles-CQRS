@@ -4,15 +4,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/tinrab/retry"
 
 	"articles/db"
 	"articles/event"
 	"articles/search"
+	"articles/util"
 )
 
 type Config struct {
@@ -39,7 +38,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	retry.ForeverSleep(2*time.Second, func(_ int) error {
+	util.Retry(func(_ int) error {
 		addr := fmt.Sprintf("postgres://%s:%s@postgres/%s?sslmode=disable", cfg.PostgresUser, cfg.PostgresPassword, cfg.PostgresDB)
 		repo, err := db.PostgresInit(addr)
 		if err != nil {
@@ -51,7 +50,7 @@ func main() {
 	})
 	defer db.Close()
 
-	retry.ForeverSleep(2*time.Second, func(_ int) error {
+	util.Retry(func(_ int) error {
 		addr := fmt.Sprintf("http://%s", cfg.ElasticsearchAddress)
 		es, err := search.ElasticInit(addr)
 		if err != nil {
@@ -63,7 +62,7 @@ func main() {
 	})
 	defer search.Close()
 
-	retry.ForeverSleep(2*time.Second, func(_ int) error {
+	util.Retry(func(_ int) error {
 		addr := fmt.Sprintf("nats://%s", cfg.NatsAddress)
 		es, err := event.NatsInit(addr)
 		if err != nil {

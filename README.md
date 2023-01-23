@@ -13,7 +13,7 @@
 - Docker
 
 ## Run Application
-- make up
+- make up or docker-compose up -d --build
 
 ## Directory structure
 ```
@@ -24,14 +24,12 @@
 │   └── event.go
 │   └── messages.go
 │   └── nats.go
+├── nginx
+│   └── Dockerfile
+│   └── nginx.conf
 ├── postgres
 │   └── Dockerfile
 │   └── up.sql
-├── pusher
-│   └── client.go
-│   └── hub.go
-│   └── main.go
-│   └── messgaes.go
 ├── query
 │   └── handler.go
 │   └── main.go
@@ -45,8 +43,11 @@
 │   └── main.go
 ├── util
 │   └── util.go
-├── docker-compose.yml
+├── vendor
+├── docker-compose.yaml
 ├── Dockerfile
+├── go.mod
+├── go.sum
 ├── Makefile
 ├── README.md
 ```
@@ -67,16 +68,19 @@ Request body:
 
 Examples:
 ```bash
-curl -X POST "localhost:8080/articles" \
--H "Accept: application/json" \
--H "Content-Type: application/json" \
--d '{"author":"hutamy","title":"Create CQRS Microservice","body":"this is how to create microservice with cqrs pattern"}'
+curl --location --request POST 'http://localhost:8080/articles' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "author": "hutamy",
+    "title": "Create CQRS Microservice",
+    "body": "this is how to create microservice with cqrs pattern"
+}'
 ```
 
 Result
 ```
 {
-  "id": 1
+  "id": "2KjDVL85Og9R3FosuyotaaVxFqK"
 }
 ```
 
@@ -93,16 +97,14 @@ Request query:
 
 Examples:
 ```bash
-curl -X GET "localhost:8080/articles" \
--H "Accept: application/json" \
--H "Content-Type: application/json" \
+curl --location --request GET 'http://localhost:8080/articles?query=cqrs&author=hutamy'
 ```
 
 Result
 ```
 [
   {
-    "id": 1,
+    "id": "2KjDVL85Og9R3FosuyotaaVxFqK",
     "author": "hutamy",
     "title": "Create CQRS Microservice",
     "body": "this is how to create microservice with cqrs pattern",
