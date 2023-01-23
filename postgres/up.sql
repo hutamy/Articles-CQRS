@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS articles;
 CREATE TABLE articles (
-  id SERIAL PRIMARY KEY,
+  id VARCHAR(32) PRIMARY KEY,
   author TEXT NOT NULL,
   title TEXT NOT NULL,
   body TEXT NOT NULL,

@@ -1,9 +1,6 @@
 package main
 
 import (
-	"articles/db"
-	"articles/event"
-	"articles/search"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,6 +9,10 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/tinrab/retry"
+
+	"articles/db"
+	"articles/event"
+	"articles/search"
 )
 
 type Config struct {
@@ -24,19 +25,22 @@ type Config struct {
 
 func newRouter() (router *mux.Router) {
 	router = mux.NewRouter()
-	router.HandleFunc("/articles", listArticlesHandler).Methods("GET")
+	router.
+		HandleFunc("/articles", listArticlesHandler).
+		Methods(http.MethodGet)
+	router.Use(mux.CORSMethodMiddleware(router))
 	return
 }
 
 func main() {
-	var config Config
-	err := envconfig.Process("", &config)
+	var cfg Config
+	err := envconfig.Process("", &cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	retry.ForeverSleep(2*time.Second, func(_ int) error {
-		addr := fmt.Sprintf("postgres://%s:%s@postgres/%s?sslmode=disable", config.PostgresUser, config.PostgresPassword, config.PostgresDB)
+		addr := fmt.Sprintf("postgres://%s:%s@postgres/%s?sslmode=disable", cfg.PostgresUser, cfg.PostgresPassword, cfg.PostgresDB)
 		repo, err := db.PostgresInit(addr)
 		if err != nil {
 			log.Println(err)
@@ -48,7 +52,8 @@ func main() {
 	defer db.Close()
 
 	retry.ForeverSleep(2*time.Second, func(_ int) error {
-		es, err := search.ElasticInit(fmt.Sprintf("http://%s", config.ElasticsearchAddress))
+		addr := fmt.Sprintf("http://%s", cfg.ElasticsearchAddress)
+		es, err := search.ElasticInit(addr)
 		if err != nil {
 			log.Println(err)
 			return err
@@ -59,7 +64,8 @@ func main() {
 	defer search.Close()
 
 	retry.ForeverSleep(2*time.Second, func(_ int) error {
-		es, err := event.NatsInit(fmt.Sprintf("nats://%s", config.NatsAddress))
+		addr := fmt.Sprintf("nats://%s", cfg.NatsAddress)
+		es, err := event.NatsInit(addr)
 		if err != nil {
 			log.Println(err)
 			return err

@@ -1,14 +1,14 @@
 package search
 
 import (
-	"articles/schema"
 	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
-	"strconv"
 
 	elastic "github.com/elastic/go-elasticsearch/v7"
+
+	"articles/schema"
 )
 
 type ElasticRepository struct {
@@ -26,34 +26,58 @@ func ElasticInit(url string) (*ElasticRepository, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &ElasticRepository{client: client}, nil
+	return &ElasticRepository{client}, nil
 }
 
-func (r *ElasticRepository) Close() {}
+func (r *ElasticRepository) Close() {
+}
 
 func (r *ElasticRepository) InsertArticle(ctx context.Context, article schema.Article) error {
-	strId := strconv.Itoa(article.ID)
 	body, _ := json.Marshal(article)
 	_, err := r.client.Index(
 		"articles",
 		bytes.NewReader(body),
-		r.client.Index.WithDocumentID(strId),
+		r.client.Index.WithDocumentID(article.ID),
 		r.client.Index.WithRefresh("wait_for"),
 	)
 	return err
 }
 
-func (r *ElasticRepository) SearchArticles(ctx context.Context, query string) (result []schema.Article, err error) {
+func (r *ElasticRepository) ListArticles(ctx context.Context, query string, author string) (result []schema.Article, err error) {
 	var buf bytes.Buffer
-	reqBody := map[string]interface{}{
-		"query": map[string]interface{}{
+	reqBody := map[string]interface{}{}
+	multiMatch := []map[string]interface{}{}
+
+	if query != "" {
+		multiMatchBodyTitle := map[string]interface{}{
 			"multi_match": map[string]interface{}{
 				"query":            query,
-				"fields":           []string{"body"},
+				"fields":           []string{"body", "title"},
 				"fuzziness":        3,
 				"cutoff_frequency": 0.0001,
 			},
-		},
+		}
+		multiMatch = append(multiMatch, multiMatchBodyTitle)
+	}
+
+	if author != "" {
+		matchAuthor := map[string]interface{}{
+			"multi_match": map[string]interface{}{
+				"query":            author,
+				"fields":           []string{"author"},
+				"fuzziness":        3,
+				"cutoff_frequency": 0.0001,
+			},
+		}
+		multiMatch = append(multiMatch, matchAuthor)
+	}
+
+	if query != "" || author != "" {
+		reqBody["query"] = map[string]interface{}{
+			"dis_max": map[string]interface{}{
+				"queries": multiMatch,
+			},
+		}
 	}
 
 	if err = json.NewEncoder(&buf).Encode(reqBody); err != nil {
@@ -69,7 +93,6 @@ func (r *ElasticRepository) SearchArticles(ctx context.Context, query string) (r
 	if err != nil {
 		return nil, err
 	}
-
 	defer func() {
 		if err = res.Body.Close(); err != nil {
 			result = nil
@@ -94,6 +117,7 @@ func (r *ElasticRepository) SearchArticles(ctx context.Context, query string) (r
 	if err := json.NewDecoder(res.Body).Decode(&resBody); err != nil {
 		return nil, err
 	}
+
 	var articles []schema.Article
 	for _, hit := range resBody.Hits.Hits {
 		articles = append(articles, hit.Source)

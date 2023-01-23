@@ -2,31 +2,31 @@ package event
 
 import "articles/schema"
 
-type EventStore interface {
+type Store interface {
 	Close()
 	PublishArticleCreated(article schema.Article) error
 	SubscribeArticleCreated() (<-chan ArticleCreatedMessage, error)
 	OnArticleCreated(f func(ArticleCreatedMessage)) error
 }
 
-var impl EventStore
+var s Store
 
-func SetEventStore(es EventStore) {
-	impl = es
+func SetEventStore(es Store) {
+	s = es
 }
 
 func Close() {
-	impl.Close()
+	s.Close()
 }
 
 func PublishArticleCreated(article schema.Article) error {
-	return impl.PublishArticleCreated(article)
+	return s.PublishArticleCreated(article)
 }
 
 func SubscribeArticleCreated() (<-chan ArticleCreatedMessage, error) {
-	return impl.SubscribeArticleCreated()
+	return s.SubscribeArticleCreated()
 }
 
 func OnArticleCreated(f func(ArticleCreatedMessage)) error {
-	return impl.OnArticleCreated(f)
+	return s.OnArticleCreated(f)
 }

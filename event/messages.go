@@ -1,19 +1,21 @@
 package event
 
-import "time"
+import (
+	"time"
+)
 
 type Message interface {
 	Key() string
 }
 
 type ArticleCreatedMessage struct {
-	ID      int
+	ID      string
 	Author  string
 	Title   string
 	Body    string
 	Created time.Time
 }
 
-func (a *ArticleCreatedMessage) Key() string {
+func (m *ArticleCreatedMessage) Key() string {
 	return "article.created"
 }

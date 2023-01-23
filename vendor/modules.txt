@@ -5,10 +5,12 @@ github.com/elastic/go-elasticsearch/v7/estransport
 github.com/elastic/go-elasticsearch/v7/internal/version
 # github.com/gorilla/mux v1.7.4
 github.com/gorilla/mux
-# github.com/gorilla/websocket v1.4.1
-github.com/gorilla/websocket
 # github.com/kelseyhightower/envconfig v1.4.0
 github.com/kelseyhightower/envconfig
+# github.com/lib/pq v1.3.0
+github.com/lib/pq
+github.com/lib/pq/oid
+github.com/lib/pq/scram
 # github.com/nats-io/jwt v0.3.0
 github.com/nats-io/jwt
 # github.com/nats-io/nats.go v1.9.1
@@ -19,6 +21,8 @@ github.com/nats-io/nats.go/util
 github.com/nats-io/nkeys
 # github.com/nats-io/nuid v1.0.1
 github.com/nats-io/nuid
+# github.com/segmentio/ksuid v1.0.2
+github.com/segmentio/ksuid
 # github.com/tinrab/retry v1.0.0
 github.com/tinrab/retry
 # golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4

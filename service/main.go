@@ -1,8 +1,6 @@
 package main
 
 import (
-	"articles/db"
-	"articles/event"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,6 +9,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/tinrab/retry"
+
+	"articles/db"
+	"articles/event"
 )
 
 type Config struct {
@@ -22,7 +23,10 @@ type Config struct {
 
 func newRouter() (router *mux.Router) {
 	router = mux.NewRouter()
-	router.HandleFunc("/articles", createArticleHandler).Methods("POST")
+	router.
+		HandleFunc("/articles", createArticleHandler).
+		Methods(http.MethodPost)
+	router.Use(mux.CORSMethodMiddleware(router))
 	return
 }
 
@@ -34,13 +38,13 @@ func main() {
 	}
 
 	retry.ForeverSleep(2*time.Second, func(_ int) error {
-		addr := fmt.Sprintf(
+		connectionStr := fmt.Sprintf(
 			"postgres://%s:%s@postgres/%s?sslmode=disable",
 			config.PostgresUser,
 			config.PostgresPassword,
 			config.PostgresDB,
 		)
-		repo, err := db.PostgresInit(addr)
+		repo, err := db.PostgresInit(connectionStr)
 		if err != nil {
 			log.Println(err)
 			return err
@@ -51,7 +55,8 @@ func main() {
 	defer db.Close()
 
 	retry.ForeverSleep(2*time.Second, func(_ int) error {
-		es, err := event.NatsInit(fmt.Sprintf("nats://%s", config.NatsAddress))
+		connectionStr := fmt.Sprintf("nats://%s", config.NatsAddress)
+		es, err := event.NatsInit(connectionStr)
 		if err != nil {
 			log.Println(err)
 			return err

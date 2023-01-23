@@ -1,12 +1,13 @@
 package event
 
 import (
-	"articles/schema"
 	"bytes"
 	"encoding/gob"
 	"log"
 
 	"github.com/nats-io/nats.go"
+
+	"articles/schema"
 )
 
 type NatsEventStore struct {
@@ -50,7 +51,9 @@ func (es *NatsEventStore) SubscribeArticleCreated() (<-chan ArticleCreatedMessag
 func (es *NatsEventStore) OnArticleCreated(f func(ArticleCreatedMessage)) (err error) {
 	m := ArticleCreatedMessage{}
 	es.articleCreatedSubscription, err = es.nc.Subscribe(m.Key(), func(msg *nats.Msg) {
-		es.readMessage(msg.Data, &m)
+		if err := es.readMessage(msg.Data, &m); err != nil {
+			log.Fatal(err)
+		}
 		f(m)
 	})
 	return
@@ -60,11 +63,11 @@ func (es *NatsEventStore) Close() {
 	if es.nc != nil {
 		es.nc.Close()
 	}
-
 	if es.articleCreatedSubscription != nil {
-		es.articleCreatedSubscription.Unsubscribe()
+		if err := es.articleCreatedSubscription.Unsubscribe(); err != nil {
+			log.Fatal(err)
+		}
 	}
-
 	close(es.articleCreatedChan)
 }
 

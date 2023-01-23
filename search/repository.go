@@ -1,14 +1,15 @@
 package search
 
 import (
-	"articles/schema"
 	"context"
+
+	"articles/schema"
 )
 
 type Repository interface {
 	Close()
 	InsertArticle(ctx context.Context, article schema.Article) error
-	SearchArticles(ctx context.Context, query string) ([]schema.Article, error)
+	ListArticles(ctx context.Context, query string, author string) ([]schema.Article, error)
 }
 
 var impl Repository
@@ -25,6 +26,6 @@ func InsertArticle(ctx context.Context, article schema.Article) error {
 	return impl.InsertArticle(ctx, article)
 }
 
-func SearchArticles(ctx context.Context, query string) ([]schema.Article, error) {
-	return impl.SearchArticles(ctx, query)
+func ListArticles(ctx context.Context, query string, author string) ([]schema.Article, error) {
+	return impl.ListArticles(ctx, query, author)
 }

@@ -11,7 +11,6 @@ COPY search search
 COPY schema schema
 COPY service service
 COPY query query
-COPY pusher pusher
 
 RUN GO111MODULE=on go install -mod vendor ./...
 

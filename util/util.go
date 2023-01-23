@@ -2,20 +2,25 @@ package util
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
 func ResponseOk(w http.ResponseWriter, body interface{}) {
-	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(body)
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(body); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func ResponseError(w http.ResponseWriter, code int, message string) {
-	w.WriteHeader(code)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
 	body := map[string]string{
 		"error": message,
 	}
-	json.NewEncoder(w).Encode(body)
+	if err := json.NewEncoder(w).Encode(body); err != nil {
+		log.Fatal(err)
+	}
 }

@@ -1,30 +1,26 @@
 package db
 
 import (
-	"articles/schema"
 	"context"
+
+	"articles/schema"
 )
 
 type Repository interface {
 	Close()
-	InsertArticle(ctx context.Context, article schema.Article) (schema.Article, error)
-	ListArticles(ctx context.Context) ([]schema.Article, error)
+	InsertArticle(ctx context.Context, article schema.Article) error
 }
 
-var impl Repository
+var r Repository
 
 func SetRepository(repository Repository) {
-	impl = repository
+	r = repository
 }
 
 func Close() {
-	impl.Close()
+	r.Close()
 }
 
-func InsertArticle(ctx context.Context, article schema.Article) (schema.Article, error) {
-	return impl.InsertArticle(ctx, article)
-}
-
-func ListArticles(ctx context.Context) ([]schema.Article, error) {
-	return impl.ListArticles(ctx)
+func InsertArticle(ctx context.Context, article schema.Article) error {
+	return r.InsertArticle(ctx, article)
 }

@@ -1,9 +1,11 @@
 package schema
 
-import "time"
+import (
+	"time"
+)
 
 type Article struct {
-	ID      int       `json:"int"`
+	ID      string    `json:"id"`
 	Author  string    `json:"author"`
 	Title   string    `json:"title"`
 	Body    string    `json:"body"`
